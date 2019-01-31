@@ -188,7 +188,8 @@ for i in range(100):
 	maa[i] = [0] * 100
 
 # Luodaan ensimmainen ruutu
-suhde = int(input("Anna solujen luonti suhde."))
+suhde = int(input("Anna solujen luonti suhde:"))
+maara = int(input("Anna ruutujen maksimi määrä:"))
 for i in range(korkeus):
 	for j in range(leveys):
 		if randint(1, 100) <= suhde:
@@ -197,7 +198,7 @@ Tallenna(maa, mones)
 mones = mones + 1
 
 vertailuMaa = maa
-for x in range(5000):
+for x in range(maara):
 	maa = Kehity(maa)
 	Tallenna(maa, mones)
 	mones = mones + 1
