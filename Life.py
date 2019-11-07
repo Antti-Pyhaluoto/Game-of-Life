@@ -7,214 +7,200 @@ from random import randint
 # Any live cell with more than three live neighbors dies, as if by overpopulation.
 # Any dead cell with exactly three live neighbors becomes a live cell, as if by reproduction
 
-def Tallenna(maa, mones):
-	kuva = Image.new("RGB", (1000, 1000), color = "white")
+def Save(earth, iteration):
+	image = Image.new("RGB", (1000, 1000), color = "white")
 
-	for i in range(len(maa[0])):
-		for j in range(len(maa)):
-			if maa[j][i] == 1:
-				kuva.paste( Image.new("RGB", (10, 10), color = "black"), (10*j, 10*i))
-	#kuva.show()
-	if mones < 10:
-		kuva.save("life000%d.jpg" % mones)
-	elif mones < 100:
-		kuva.save("life00%d.jpg" % mones)
-	elif mones < 1000:
-		kuva.save("life0%d.jpg" % mones)
+	for i in range(len(earth[0])):
+		for j in range(len(earth)):
+			if earth[j][i] == 1:
+				image.paste( Image.new("RGB", (10, 10), color = "black"), (10*j, 10*i))
+	#image.show()
+	if iteration < 10:
+		image.save("life000%d.jpg" % iteration)
+	elif iteration < 100:
+		image.save("life00%d.jpg" % iteration)
+	elif iteration < 1000:
+		image.save("life0%d.jpg" % iteration)
 	else:
-		kuva.save("life%d.jpg" % mones)
+		image.save("life%d.jpg" % iteration)
 
-def Kehity(maa):
-	#Jos solu on jossain laidassa ei yritetä laskea laidan yli meneviä soluja.
-	#Luodaan muuttujat joilla pidetään kirjaa ympärillä olevista soluista ja onko solu jossain laidassa. Säännöt selitetty ylempänä.
-	ylhaalla = False
-	alhaalla = False
-	oikealla = False
-	vasemmalla = False
-	ymparilla = 0
-	
-	#Luodaan uusi maa johon kirjataan uusi sukupolvi.
-	uusiMaa = [0] * 100
+def Evolve(earth):
+	# Creating a new earth where the new iteration is recorded.
+	newEarth = [0] * 100
 
 	for i in range(100):
-		uusiMaa[i] = [0] * 100
+		newEarth[i] = [0] * 100
 	
-	for i in range(len(maa[0])):#korkeus
-		for j in range(len(maa)):#leveys
-			# Jos solu on jossain laidassa ei yritetä laskea laidan yli meneviä soluja.
-			#Luodaan muuttujat joilla pidetään kirjaa ympärillä olevista soluista ja onko solu jossain laidassa. Säännöt selitetty ylempänä.
-			ymparilla = 0
-			ylhaalla = False
-			alhaalla = False
-			oikealla = False
-			vasemmalla = False
+	for i in range(len(earth[0])):#height
+		for j in range(len(earth)):#width
+			# Creating the variables to keep track of surrounding cells and if the cell is on edge. Rules explained above.
+			around = 0
+			up = False
+			down = False
+			right = False
+			left = False
 			if j == 0:
-				vasemmalla = True
+				left = True
 			if j == 99:
-				oikealla = True
+				right = True
 			if i == 0:
-				ylhaalla = True
+				up = True
 			if i == 99:
-				alhaalla = True
+				down = True
 			
-			#print(ylhaalla, alhaalla, oikealla, vasemmalla, j, i)
+			#print(up, down, right, left, j, i)
 			
-			#Laskevat tapaukset joissa solu ei ole raunalla
-			if not ylhaalla and maa[j][i-1] == 1:
-				ymparilla = ymparilla + 1
-			if not alhaalla and maa[j][i+1] == 1:
-				ymparilla = ymparilla + 1
-			if not vasemmalla and maa[j-1][i] == 1:
-				ymparilla = ymparilla + 1
-			if not oikealla and maa[j+1][i] == 1:
-				ymparilla = ymparilla + 1	
-			if not ylhaalla and not vasemmalla and maa[j-1][i-1] == 1:
-				ymparilla = ymparilla + 1
-			if not ylhaalla and not oikealla and maa[j+1][i-1] == 1:
-				ymparilla = ymparilla + 1
-			if not alhaalla and not vasemmalla and maa[j-1][i+1] == 1:
-				ymparilla = ymparilla + 1
-			if not alhaalla and not oikealla and maa[j+1][i+1] == 1:
-				ymparilla = ymparilla + 1
+			# Calculates cases where the cell is not at edge.
+			if not up and earth[j][i-1] == 1:
+				around = around + 1
+			if not down and earth[j][i+1] == 1:
+				around = around + 1
+			if not left and earth[j-1][i] == 1:
+				around = around + 1
+			if not right and earth[j+1][i] == 1:
+				around = around + 1	
+			if not up and not left and earth[j-1][i-1] == 1:
+				around = around + 1
+			if not up and not right and earth[j+1][i-1] == 1:
+				around = around + 1
+			if not down and not left and earth[j-1][i+1] == 1:
+				around = around + 1
+			if not down and not right and earth[j+1][i+1] == 1:
+				around = around + 1
 			
 			#Laskevat ne tapaukset joissa jollakin laidoista niin että otetaan huomioon vastakkainen laita.
-			if ylhaalla:
-				if vasemmalla:
-					if maa[99][i+1]:
-						ymparilla = ymparilla + 1
-					if maa[99][i]:
-						ymparilla = ymparilla + 1
-					if maa[99][99]:
-						ymparilla = ymparilla + 1
-					if maa[j][99]:
-						ymparilla = ymparilla + 1
-					if maa[j+1][99]:
-						ymparilla = ymparilla + 1
-				elif oikealla:
-					if maa[j-1][99]:
-						ymparilla = ymparilla + 1
-					if maa[j][99]:
-						ymparilla = ymparilla + 1
-					if maa[0][99]:
-						ymparilla = ymparilla + 1
-					if maa[0][i]:
-						ymparilla = ymparilla + 1
-					if maa[0][+1]:
-						ymparilla = ymparilla + 1
+			# Calculates cases where the cell is at some edge and takes the cells at opposite side into account.
+			if up:
+				if left:
+					if earth[99][i+1]:
+						around = around + 1
+					if earth[99][i]:
+						around = around + 1
+					if earth[99][99]:
+						around = around + 1
+					if earth[j][99]:
+						around = around + 1
+					if earth[j+1][99]:
+						around = around + 1
+				elif right:
+					if earth[j-1][99]:
+						around = around + 1
+					if earth[j][99]:
+						around = around + 1
+					if earth[0][99]:
+						around = around + 1
+					if earth[0][i]:
+						around = around + 1
+					if earth[0][+1]:
+						around = around + 1
 				else:
-					if maa[j-1][99]:
-						ymparilla = ymparilla + 1
-					if maa[j][99]:
-						ymparilla = ymparilla + 1
-					if maa[j+1][99]:
-						ymparilla = ymparilla + 1
+					if earth[j-1][99]:
+						around = around + 1
+					if earth[j][99]:
+						around = around + 1
+					if earth[j+1][99]:
+						around = around + 1
 						
-			if alhaalla:
-				if vasemmalla:
-					if maa[j+1][0]:
-						ymparilla = ymparilla + 1
-					if maa[j][0]:
-						ymparilla = ymparilla + 1
-					if maa[99][0]:
-						ymparilla = ymparilla + 1
-					if maa[99][i]:
-						ymparilla = ymparilla + 1
-					if maa[99][i-1]:
-						ymparilla = ymparilla + 1
-				elif oikealla:
-					if maa[0][i-1]:
-						ymparilla = ymparilla + 1
-					if maa[0][i]:
-						ymparilla = ymparilla + 1
-					if maa[0][0]:
-						ymparilla = ymparilla + 1
-					if maa[j][0]:
-						ymparilla = ymparilla + 1
-					if maa[j-1][0]:
-						ymparilla = ymparilla + 1
+			if down:
+				if left:
+					if earth[j+1][0]:
+						around = around + 1
+					if earth[j][0]:
+						around = around + 1
+					if earth[99][0]:
+						around = around + 1
+					if earth[99][i]:
+						around = around + 1
+					if earth[99][i-1]:
+						around = around + 1
+				elif right:
+					if earth[0][i-1]:
+						around = around + 1
+					if earth[0][i]:
+						around = around + 1
+					if earth[0][0]:
+						around = around + 1
+					if earth[j][0]:
+						around = around + 1
+					if earth[j-1][0]:
+						around = around + 1
 				else:
-					if maa[j-1][0]:
-						ymparilla = ymparilla + 1
-					if maa[j][0]:
-						ymparilla = ymparilla + 1
-					if maa[j+1][0]:
-						ymparilla = ymparilla + 1
+					if earth[j-1][0]:
+						around = around + 1
+					if earth[j][0]:
+						around = around + 1
+					if earth[j+1][0]:
+						around = around + 1
 			
-			if vasemmalla and not(ylhaalla or alhaalla):
-				if maa[99][i-1]:
-					ymparilla = ymparilla + 1
-				if maa[99][i]:
-					ymparilla = ymparilla + 1
-				if maa[99][i+1]:
-					ymparilla = ymparilla + 1
+			if left and not(up or down):
+				if earth[99][i-1]:
+					around = around + 1
+				if earth[99][i]:
+					around = around + 1
+				if earth[99][i+1]:
+					around = around + 1
 					
-			if oikealla and not(ylhaalla or alhaalla):
-				if maa[0][i-1]:
-					ymparilla = ymparilla + 1
-				if maa[0][i]:
-					ymparilla = ymparilla + 1
-				if maa[0][i+1]:
-					ymparilla = ymparilla + 1
+			if right and not(up or down):
+				if earth[0][i-1]:
+					around = around + 1
+				if earth[0][i]:
+					around = around + 1
+				if earth[0][i+1]:
+					around = around + 1
 			
 			#Rules
-			if maa[j][i] == 1 and ymparilla < 2:
-				uusiMaa[j][i] = 0
-			elif maa[j][i] == 1 and (ymparilla == 2 or ymparilla == 3):
-				uusiMaa[j][i] = 1
-			elif maa[j][i] == 1 and ymparilla > 3:
-				uusiMaa[j][i] = 0
-			elif maa[j][i] == 0 and ymparilla == 3:
-				uusiMaa[j][i] = 1
+			if earth[j][i] == 1 and around < 2:
+				newEarth[j][i] = 0
+			elif earth[j][i] == 1 and (around == 2 or around == 3):
+				newEarth[j][i] = 1
+			elif earth[j][i] == 1 and around > 3:
+				newEarth[j][i] = 0
+			elif earth[j][i] == 0 and around == 3:
+				newEarth[j][i] = 1
 			else:
-				uusiMaa[j][i] = 0
-				
-			if ymparilla == 1 and uusiMaa[j][i] > maa[j][i]:
-				print("Ei toimi. 1")
-			if ymparilla == 2 and uusiMaa[j][i] != maa[j][i]:
-				print("Ei toimi. 2")
-			if ymparilla > 3 and uusiMaa[j][i] == 1:
-				print("Ei kuollut.")
-	return uusiMaa
+				newEarth[j][i] = 0
+	return newEarth
 		
-leveys = 100
-korkeus = 100
-mones = 0
-maa = [0] * 100
-eka = 0
-valiMaa = 0
-vertailuMaa = 0
+width = 100
+height = 100
+iteration = 0
+earth = [0] * 100
+first = 0
+tempEarth = 0
+compareEarth = 0
 
 for i in range(100):
-	maa[i] = [0] * 100
+	earth[i] = [0] * 100
 
-# Luodaan ensimmainen ruutu
-suhde = int(input("Anna solujen luonti suhde:"))
-maara = int(input("Anna ruutujen maksimi määrä:"))
-for i in range(korkeus):
-	for j in range(leveys):
-		if randint(1, 100) <= suhde:
-			maa[j][i] = 1
-Tallenna(maa, mones)
-mones = mones + 1
+# Creating the first iteration
+ratio = int(input("Give ratio for alive cells(0-100):"))
+amount = int(input("Give max number of iterations:"))
+for i in range(height):
+	for j in range(width):
+		if randint(1, 100) <= ratio:
+			earth[j][i] = 1
+Save(earth, iteration)
+iteration = iteration + 1
 
-vertailuMaa = maa
-for x in range(maara):
-	maa = Kehity(maa)
-	Tallenna(maa, mones)
-	mones = mones + 1
+compareEarth = earth
+for x in range(amount):
+	earth = Evolve(earth)
+	Save(earth, iteration)
+	iteration = iteration + 1
 	if x % 100 == 0:
 		print(x)
-	if eka == 0:
-		valiMaa = maa
-		eka = 1
+	if first == 0:
+		tempEarth = earth
+		first = 1
 	else:
-		if maa == vertailuMaa:
+		# Compares current earth to earth 2 iteratons ago to detect when everything has settled down.
+		if earth == compareEarth:
 			for y in range(10):
-				maa = Kehity(maa)
-				Tallenna(maa, mones)
-				mones = mones + 1
-			print("Loppu.")
+				earth = Evolve(earth)
+				Save(earth, iteration)
+				iteration = iteration + 1
+			print("End.")
 			exit()
 		else:
-			vertailuMaa = valiMaa
-			valiMaa = maa
+			compareEarth = tempEarth
+			tempEarth = earth
